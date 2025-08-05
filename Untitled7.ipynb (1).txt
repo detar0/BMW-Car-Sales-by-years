@@ -1,0 +1,69 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "rJ3DP9RaK958"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "df =  pd.read_csv(\"/BMW_Car_Sales_Classification.csv\")\n",
+        "print(df.head(10))\n",
+        "# Checking for unique values\n",
+        "print(df[\"Model\"].unique())\n",
+        "data = df[\"Price_USD\"]\n",
+        "# Checking for NaN and others\n",
+        "print(df.isnull().sum())\n",
+        "# Converting to numeric\n",
+        "cleared=pd.to_numeric(data,errors=\"coerce\")\n",
+        "print(cleared)\n",
+        "\n",
+        "\n",
+        "# Filtering data by years\n",
+        "st_yr=2014\n",
+        "nd_yr=2024\n",
+        "data_2014 = df[df[\"Year\"] == st_yr]\n",
+        "data_2024 = df[df[\"Year\"] == nd_yr]\n",
+        "data_2014[\"Price_USD\"] = pd.to_numeric(data_2014[\"Price_USD\"], errors=\"coerce\")\n",
+        "data_2024[\"Price_USD\"] = pd.to_numeric(data_2024[\"Price_USD\"], errors=\"coerce\")\n",
+        "\n",
+        "#Sorting by largest models\n",
+        "top_8_2014 = data_2014.nlargest(12, \"Price_USD\")[\"Model\"].tolist()\n",
+        "top_8_2024 = data_2024.nlargest(8, \"Price_USD\")[\"Model\"].tolist()\n",
+        "data_2014[\"Model_Filtered\"]=data_2014[\"Model\"].apply(lambda x:x if x in top_8_2014 else \"Others\")\n",
+        "data_2024[\"Model_Filtered\"]=data_2024[\"Model\"].apply(lambda x:x if x in top_8_2024 else \"Others\")\n",
+        "result_2014 = data_2014.groupby(\"Model_Filtered\")[\"Price_USD\"].sum().reset_index()\n",
+        "result_2024 = data_2024.groupby(\"Model_Filtered\")[\"Price_USD\"].sum().reset_index()\n",
+        "\n",
+        "fig,(ax1,ax2) = plt.subplots(1,2, figsize=(10,8))\n",
+        "#Creating the charts\n",
+        "ax1.pie(result_2014[\"Price_USD\"], labels=result_2014[\"Model_Filtered\"], autopct = \"%1.1f%%\")\n",
+        "ax1.set_title(\"BMW largest sold models in 2014\")\n",
+        "\n",
+        "ax2.pie(result_2024[\"Price_USD\"], labels=result_2024[\"Model_Filtered\"],  autopct = \"%1.1f%%\")\n",
+        "ax2.set_title(\"BMW largest sold models in 2024\")\n",
+        "\n",
+        "plt.tight_layout()\n",
+        "plt.show()"
+      ]
+    }
+  ]
+}
